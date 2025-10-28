@@ -1,10 +1,10 @@
 # Ballon Tower Defense
 
 ```
-# Step 1: Clone the repository using the project's Git URL.
+# Step 1: Clone the repo
 git clone https://github.com/nnh12/Ballon-Tower-Defense.git
 
-# Step 2: Navigate to the project directory.
+# Step 2: Navigate to directory.
 cd Ballon-Tower-Defense
 
 # Step 3: Install the necessary dependencies.
