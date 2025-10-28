@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import GameCanvas, { getPathPosition } from '@/components/GameCanvas';
 import GameUI from '@/components/GameUI';
-import { Balloon, Tower, Projectile, GameState, Position } from '@/types/game';
+import { Balloon, Tower, Projectile, GameState, Position, Explosion } from '@/types/game';
 import { toast } from 'sonner';
 
 const INITIAL_MONEY = 650;
@@ -32,6 +32,7 @@ const Index = () => {
   const [balloons, setBalloons] = useState<Balloon[]>([]);
   const [towers, setTowers] = useState<Tower[]>([]);
   const [projectiles, setProjectiles] = useState<Projectile[]>([]);
+  const [explosions, setExplosions] = useState<Explosion[]>([]);
 
   // Start a new wave
   const startWave = useCallback(() => {
@@ -194,14 +195,27 @@ const Index = () => {
           const dist = Math.hypot(dx, dy);
 
           if (dist < proj.speed) {
-            // Hit! Damage balloon
+            // Hit! Create explosion for bomb towers
+            if (proj.type === 'bomb') {
+              const explosion: Explosion = {
+                id: `explosion-${Date.now()}-${Math.random()}`,
+                position: { ...proj.position },
+                radius: 0,
+                maxRadius: 80,
+                opacity: 1,
+              };
+              setExplosions(e => [...e, explosion]);
+            }
+
+            // Damage balloon(s) - bomb has splash damage
+            const splashRadius = proj.type === 'bomb' ? 50 : 20;
             setBalloons(balloons => balloons.map(balloon => {
               const hitDist = Math.hypot(
                 balloon.position.x - proj.position.x,
                 balloon.position.y - proj.position.y
               );
               
-              if (hitDist < 20) {
+              if (hitDist < splashRadius) {
                 const newHealth = balloon.health - proj.damage;
                 if (newHealth <= 0) {
                   setGameState(gs => ({ ...gs, money: gs.money + balloon.reward }));
@@ -226,6 +240,24 @@ const Index = () => {
         }).filter((p): p is Projectile => p !== null);
 
         return updated;
+      });
+
+      // Animate explosions
+      setExplosions(prev => {
+        return prev.map(explosion => {
+          const newRadius = explosion.radius + 4;
+          const newOpacity = 1 - (newRadius / explosion.maxRadius);
+          
+          if (newRadius >= explosion.maxRadius) {
+            return null;
+          }
+          
+          return {
+            ...explosion,
+            radius: newRadius,
+            opacity: newOpacity,
+          };
+        }).filter((e): e is Explosion => e !== null);
       });
     }, 16);
 
@@ -268,6 +300,7 @@ const Index = () => {
               balloons={balloons}
               towers={towers}
               projectiles={projectiles}
+              explosions={explosions}
               selectedTower={gameState.selectedTower}
               onPlaceTower={handlePlaceTower}
             />

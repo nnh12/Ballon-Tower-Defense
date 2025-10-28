@@ -33,7 +33,15 @@ export interface Projectile {
   target: Position;
   speed: number;
   damage: number;
-  type: string;
+  type: Tower['type'];
+}
+
+export interface Explosion {
+  id: string;
+  position: Position;
+  radius: number;
+  maxRadius: number;
+  opacity: number;
 }
 
 export interface GameState {

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { Balloon, Tower, Projectile, Position } from '@/types/game';
+import { Balloon, Tower, Projectile, Position, Explosion } from '@/types/game';
 
 interface GameCanvasProps {
   balloons: Balloon[];
   towers: Tower[];
   projectiles: Projectile[];
+  explosions: Explosion[];
   selectedTower: Tower['type'] | null;
   onPlaceTower: (position: Position, type: Tower['type']) => void;
 }
@@ -44,7 +45,7 @@ export const getPathPosition = (progress: number): Position => {
   };
 };
 
-const GameCanvas = ({ balloons, towers, projectiles, selectedTower, onPlaceTower }: GameCanvasProps) => {
+const GameCanvas = ({ balloons, towers, projectiles, explosions, selectedTower, onPlaceTower }: GameCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hoverPos, setHoverPos] = useState<Position | null>(null);
 
@@ -225,12 +226,63 @@ const GameCanvas = ({ balloons, towers, projectiles, selectedTower, onPlaceTower
       }
     });
 
+    // Draw explosions
+    explosions.forEach(explosion => {
+      // Outer explosion ring (fire)
+      const gradient = ctx.createRadialGradient(
+        explosion.position.x, explosion.position.y, 0,
+        explosion.position.x, explosion.position.y, explosion.radius
+      );
+      gradient.addColorStop(0, `rgba(255, 200, 0, ${explosion.opacity * 0.8})`);
+      gradient.addColorStop(0.5, `rgba(255, 100, 0, ${explosion.opacity * 0.6})`);
+      gradient.addColorStop(1, `rgba(255, 50, 0, ${explosion.opacity * 0.2})`);
+      
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(explosion.position.x, explosion.position.y, explosion.radius, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Inner bright core
+      if (explosion.radius < explosion.maxRadius * 0.5) {
+        ctx.fillStyle = `rgba(255, 255, 200, ${explosion.opacity})`;
+        ctx.beginPath();
+        ctx.arc(explosion.position.x, explosion.position.y, explosion.radius * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      
+      // Smoke particles
+      ctx.fillStyle = `rgba(80, 80, 80, ${explosion.opacity * 0.4})`;
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI * 2 * i) / 6;
+        const smokeX = explosion.position.x + Math.cos(angle) * explosion.radius * 0.8;
+        const smokeY = explosion.position.y + Math.sin(angle) * explosion.radius * 0.8;
+        ctx.beginPath();
+        ctx.arc(smokeX, smokeY, explosion.radius * 0.15, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+
     // Draw projectiles
     projectiles.forEach(projectile => {
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-      ctx.beginPath();
-      ctx.arc(projectile.position.x, projectile.position.y, 4, 0, Math.PI * 2);
-      ctx.fill();
+      if (projectile.type === 'bomb') {
+        // Draw bomb projectile
+        ctx.fillStyle = 'rgba(40, 40, 40, 0.9)';
+        ctx.beginPath();
+        ctx.arc(projectile.position.x, projectile.position.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Fuse spark
+        ctx.fillStyle = 'rgba(255, 150, 0, 0.9)';
+        ctx.beginPath();
+        ctx.arc(projectile.position.x - 2, projectile.position.y - 4, 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // Draw regular projectile
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.beginPath();
+        ctx.arc(projectile.position.x, projectile.position.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
     });
 
     // Draw balloons
@@ -290,7 +342,7 @@ const GameCanvas = ({ balloons, towers, projectiles, selectedTower, onPlaceTower
       ctx.fill();
       ctx.globalAlpha = 1;
     }
-  }, [balloons, towers, projectiles, selectedTower, hoverPos]);
+  }, [balloons, towers, projectiles, explosions, selectedTower, hoverPos]);
 
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!selectedTower) return;
