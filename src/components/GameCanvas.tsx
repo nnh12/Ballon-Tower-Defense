@@ -69,6 +69,62 @@ const GameCanvas = ({ balloons, towers, projectiles, selectedTower, onPlaceTower
     ctx.fillStyle = 'hsl(142, 76%, 45%)';
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
+    // Draw beach (bottom and right edges)
+    ctx.fillStyle = 'hsl(45, 60%, 80%)';
+    ctx.fillRect(0, CANVAS_HEIGHT - 80, CANVAS_WIDTH, 80);
+    ctx.fillRect(CANVAS_WIDTH - 60, 0, 60, CANVAS_HEIGHT);
+
+    // Draw water at edges
+    ctx.fillStyle = 'hsl(200, 80%, 60%)';
+    ctx.fillRect(0, CANVAS_HEIGHT - 20, CANVAS_WIDTH, 20);
+    ctx.fillRect(CANVAS_WIDTH - 20, 0, 20, CANVAS_HEIGHT);
+
+    // Draw decorative trees
+    const trees = [
+      { x: 50, y: 50 }, { x: 120, y: 30 }, { x: 700, y: 50 },
+      { x: 730, y: 150 }, { x: 50, y: 350 }, { x: 100, y: 450 },
+      { x: 550, y: 30 }, { x: 680, y: 250 }
+    ];
+    
+    trees.forEach(tree => {
+      // Tree trunk
+      ctx.fillStyle = 'hsl(30, 40%, 30%)';
+      ctx.fillRect(tree.x - 5, tree.y + 10, 10, 20);
+      
+      // Tree foliage
+      ctx.fillStyle = 'hsl(142, 60%, 35%)';
+      ctx.beginPath();
+      ctx.arc(tree.x, tree.y, 15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(tree.x - 8, tree.y + 5, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(tree.x + 8, tree.y + 5, 12, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // Draw rocks
+    const rocks = [
+      { x: 200, y: 50, size: 15 }, { x: 500, y: 80, size: 12 },
+      { x: 300, y: 150, size: 18 }, { x: 550, y: 150, size: 10 },
+      { x: 150, y: 320, size: 14 }, { x: 450, y: 480, size: 16 },
+      { x: 600, y: 350, size: 13 }
+    ];
+    
+    rocks.forEach(rock => {
+      ctx.fillStyle = 'hsl(0, 0%, 50%)';
+      ctx.beginPath();
+      ctx.ellipse(rock.x, rock.y, rock.size, rock.size * 0.8, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Rock highlight
+      ctx.fillStyle = 'hsl(0, 0%, 65%)';
+      ctx.beginPath();
+      ctx.ellipse(rock.x - 3, rock.y - 2, rock.size * 0.4, rock.size * 0.3, 0, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
     // Draw path
     ctx.strokeStyle = 'hsl(45, 30%, 75%)';
     ctx.lineWidth = 60;
