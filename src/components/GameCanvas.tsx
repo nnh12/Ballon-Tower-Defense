@@ -134,14 +134,38 @@ const GameCanvas = ({ balloons, towers, projectiles, selectedTower, onPlaceTower
         ctx.restore();
       }
 
-      // Draw tower icon (for non-dart towers or centered on dart tower)
-      if (tower.type !== 'dart') {
+      // Draw catapult for bomb tower
+      if (tower.type === 'bomb' && tower.rotation !== undefined) {
+        ctx.save();
+        ctx.translate(tower.position.x, tower.position.y);
+        ctx.rotate(tower.rotation);
+        
+        // Catapult arm
+        ctx.fillStyle = 'hsl(30, 60%, 40%)';
+        ctx.fillRect(-5, -3, 30, 6);
+        
+        // Catapult basket
+        ctx.fillStyle = 'hsl(30, 60%, 30%)';
+        ctx.beginPath();
+        ctx.arc(25, 0, 8, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Bomb in basket
+        ctx.fillStyle = 'hsl(0, 0%, 10%)';
+        ctx.beginPath();
+        ctx.arc(25, 0, 5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.restore();
+      }
+
+      // Draw tower icon (for ice tower only)
+      if (tower.type === 'ice') {
         ctx.fillStyle = 'white';
-        ctx.font = 'bold 16px Arial';
+        ctx.font = 'bold 20px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        const icons = { bomb: '💣', ice: '❄' };
-        ctx.fillText(icons[tower.type] || '', tower.position.x, tower.position.y);
+        ctx.fillText('❄', tower.position.x, tower.position.y);
       }
     });
 
