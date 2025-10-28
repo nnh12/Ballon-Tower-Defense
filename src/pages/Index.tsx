@@ -150,8 +150,6 @@ const Index = () => {
       // Tower shooting
       setTowers(prev => {
         const updatedTowers = prev.map(tower => {
-          if (now - tower.lastFired < tower.fireRate) return tower;
-
           // Find nearest balloon in range
           const target = balloons.find(balloon => {
             const dist = Math.hypot(
@@ -161,7 +159,16 @@ const Index = () => {
             return dist <= tower.range;
           });
 
+          // Calculate rotation towards target
+          let rotation = tower.rotation || 0;
           if (target) {
+            const dx = target.position.x - tower.position.x;
+            const dy = target.position.y - tower.position.y;
+            rotation = Math.atan2(dy, dx);
+          }
+
+          // Shoot if cooldown is ready
+          if (now - tower.lastFired >= tower.fireRate && target) {
             const projectile: Projectile = {
               id: `proj-${Date.now()}-${Math.random()}`,
               position: { ...tower.position },
@@ -171,10 +178,10 @@ const Index = () => {
               type: tower.type,
             };
             setProjectiles(p => [...p, projectile]);
-            return { ...tower, lastFired: now };
+            return { ...tower, lastFired: now, rotation };
           }
 
-          return tower;
+          return { ...tower, rotation };
         });
         return updatedTowers;
       });

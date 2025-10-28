@@ -97,7 +97,7 @@ const GameCanvas = ({ balloons, towers, projectiles, selectedTower, onPlaceTower
         ctx.stroke();
       }
 
-      // Draw tower
+      // Draw tower base
       const colors = {
         dart: 'hsl(210, 100%, 50%)',
         bomb: 'hsl(0, 84%, 60%)',
@@ -112,13 +112,37 @@ const GameCanvas = ({ balloons, towers, projectiles, selectedTower, onPlaceTower
       ctx.lineWidth = 3;
       ctx.stroke();
 
-      // Draw tower icon
-      ctx.fillStyle = 'white';
-      ctx.font = 'bold 16px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      const icons = { dart: '→', bomb: '💣', ice: '❄' };
-      ctx.fillText(icons[tower.type], tower.position.x, tower.position.y);
+      // Draw turret for dart tower
+      if (tower.type === 'dart' && tower.rotation !== undefined) {
+        ctx.save();
+        ctx.translate(tower.position.x, tower.position.y);
+        ctx.rotate(tower.rotation);
+        
+        // Turret barrel
+        ctx.fillStyle = 'hsl(210, 100%, 40%)';
+        ctx.fillRect(0, -6, 25, 12);
+        
+        // Turret barrel outline
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(0, -6, 25, 12);
+        
+        // Turret tip
+        ctx.fillStyle = 'hsl(210, 100%, 30%)';
+        ctx.fillRect(22, -4, 6, 8);
+        
+        ctx.restore();
+      }
+
+      // Draw tower icon (for non-dart towers or centered on dart tower)
+      if (tower.type !== 'dart') {
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const icons = { bomb: '💣', ice: '❄' };
+        ctx.fillText(icons[tower.type] || '', tower.position.x, tower.position.y);
+      }
     });
 
     // Draw projectiles

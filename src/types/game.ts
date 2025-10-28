@@ -24,6 +24,7 @@ export interface Tower {
   damage: number;
   cost: number;
   level: number;
+  rotation?: number;
 }
 
 export interface Projectile {
